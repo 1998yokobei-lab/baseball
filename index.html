@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BaseStory - Supabase実戦版</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>BaseStory - スマホ完全対応版</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
     <style>
         body { background-color: #121214; color: #FFFFFF; font-family: sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; }
         .app-container { width: 100%; max-width: 480px; min-height: 100vh; padding: 20px; box-sizing: border-box; }
@@ -40,19 +40,18 @@
     </div>
 
     <script>
-        // 君のSupabaseの情報をセット！
+        // ② お尻の /rest/v1/ をきれいに消したURLに修正したぜ！
         const SUPABASE_URL = 'https://zthdzfqsuztfsxjoboms.supabase.co'; 
         const SUPABASE_ANON_KEY = 'sb_publishable_DUhETmOXmNsqT_MKoiqYsQ_XbGX_ioG';
 
-        // Supabaseの初期化
+        // スマホで確実に動かすための初期化方法
+        const { createClient } = window.supabase;
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // データを引っ張ってくる関数
         async function fetchGamesFromSupabase() {
             const container = document.getElementById('game-list');
 
             try {
-                // gamesテーブルからデータを取得
                 const { data: games, error } = await supabase
                     .from('games')
                     .select('*');
@@ -60,11 +59,10 @@
                 if (error) throw error;
 
                 if (!games || games.length === 0) {
-                    container.innerHTML = '<div class="loading">今日の試合データはまだありません。Supabaseに入れてみてね！</div>';
+                    container.innerHTML = '<div class="loading">試合データが空っぽです。Supabaseを確認してね。</div>';
                     return;
                 }
 
-                // 画面の書き換え
                 container.innerHTML = '';
                 games.forEach(game => {
                     const card = document.createElement('div');
@@ -93,11 +91,12 @@
 
             } catch (err) {
                 console.error(err);
-                container.innerHTML = '<div class="loading">接続エラーが発生しました。</div>';
+                container.innerHTML = '<div class="loading">接続エラーが発生しました。<br>URLやお尻の文字を確認してね。</div>';
             }
         }
 
-        window.onload = fetchGamesFromSupabase;
+        // ページ読み込み完了時に実行
+        document.addEventListener('DOMContentLoaded', fetchGamesFromSupabase);
     </script>
 </body>
 </html>
