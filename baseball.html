@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BaseStory - Supabase実戦版</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background-color: #121214; color: #FFFFFF; font-family: sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 480px; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+        header { margin-bottom: 24px; }
+        h1 { font-size: 24px; margin: 0 0 4px 0; }
+        .subtitle { font-size: 14px; color: #8E8E93; margin: 0; }
+        .card { background-color: #1E1E22; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); }
+        .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .game-title { font-size: 18px; margin: 0; }
+        .stadium-text { font-size: 12px; color: #A2A2A6; }
+        .divider { height: 1px; background-color: #2C2C2E; margin-bottom: 12px; }
+        .section { margin-bottom: 16px; }
+        .section-label { font-size: 12px; font-weight: bold; color: #3498DB; margin-bottom: 6px; }
+        .body-text { font-size: 14px; color: #E5E5EA; line-height: 1.6; margin: 0; }
+        .player-section { background-color: #26262B; padding: 12px; border-radius: 8px; }
+        .player-name { font-size: 16px; color: #FFCC00; margin: 0 0 4px 0; }
+        .player-description { font-size: 13px; color: #E5E5EA; line-height: 1.5; margin: 0; }
+        .button { display: block; width: 100%; background-color: #3498DB; color: #FFFFFF; border: none; border-radius: 8px; padding: 12px 0; font-weight: bold; text-align: center; cursor: pointer; }
+        .loading { text-align: center; color: #8E8E93; margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <h1>今日の観戦ブリーフィング</h1>
+            <p class="subtitle">君のSupabaseからリアルタイムで取得中！</p>
+        </header>
+
+        <main id="game-list">
+            <div class="loading">データを読み込み中...</div>
+        </main>
+    </div>
+
+    <script>
+        // 君のSupabaseの情報をセット！
+        const SUPABASE_URL = 'https://zthdzfqsuztfsxjoboms.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_DUhETmOXmNsqT_MKoiqYsQ_XbGX_ioG';
+
+        // Supabaseの初期化
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // データを引っ張ってくる関数
+        async function fetchGamesFromSupabase() {
+            const container = document.getElementById('game-list');
+
+            try {
+                // gamesテーブルからデータを取得
+                const { data: games, error } = await supabase
+                    .from('games')
+                    .select('*');
+
+                if (error) throw error;
+
+                if (!games || games.length === 0) {
+                    container.innerHTML = '<div class="loading">今日の試合データはまだありません。Supabaseに入れてみてね！</div>';
+                    return;
+                }
+
+                // 画面の書き換え
+                container.innerHTML = '';
+                games.forEach(game => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <div class="game-header">
+                            <h2 class="game-title">${game.away_team} vs ${game.home_team}</h2>
+                            <span class="stadium-text">${game.stadium}</span>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="section">
+                            <div class="section-label">💡 今日の見どころ</div>
+                            <p class="body-text">${game.ai_story}</p>
+                        </div>
+                        <div class="section player-section">
+                            <div class="section-label">🔥 本日の注目選手</div>
+                            <h3 class="player-name">${game.featured_player}</h3>
+                            <p class="player-description">${game.player_reason}</p>
+                        </div>
+                        <button class="button" onclick="alert('${game.featured_player}の詳細ページは開発中！')">
+                            データを詳しく見る
+                        </button>
+                    `;
+                    container.appendChild(card);
+                });
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<div class="loading">接続エラーが発生しました。</div>';
+            }
+        }
+
+        window.onload = fetchGamesFromSupabase;
+    </script>
+</body>
+</html>
