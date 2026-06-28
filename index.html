@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BaseStory - AI自動生成モード</title>
+    <title>BaseStory - 安全なAI連動版</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
     <style>
         body { background-color: #121214; color: #FFFFFF; font-family: sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; }
@@ -12,9 +12,9 @@
         h1 { font-size: 24px; margin: 0 0 4px 0; }
         .subtitle { font-size: 14px; color: #8E8E93; margin: 0; }
         
-        /* AIボタンのスタイル（オレンジ色で目立たせる） */
-        .ai-btn-container { background-color: #1E1E22; padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed #E67E22; }
-        .ai-button { display: block; width: 100%; background-color: #E67E22; color: #FFFFFF; border: none; border-radius: 8px; padding: 12px 0; font-weight: bold; text-align: center; cursor: pointer; font-size: 14px; }
+        /* AIボタンのスタイル（安全なグリーンに変更！） */
+        .ai-btn-container { background-color: #1E1E22; padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed #2ECC71; }
+        .ai-button { display: block; width: 100%; background-color: #2ECC71; color: #FFFFFF; border: none; border-radius: 8px; padding: 12px 0; font-weight: bold; text-align: center; cursor: pointer; font-size: 14px; }
         .ai-button:disabled { background-color: #7F8C8D; cursor: not-allowed; }
         
         .card { background-color: #1E1E22; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); }
@@ -36,11 +36,11 @@
     <div class="app-container">
         <header>
             <h1>今日の観戦ブリーフィング</h1>
-            <p class="subtitle">AI自動翻訳×Supabaseリアルタイム連動中</p>
+            <p class="subtitle">安全な隠し部屋（RPC）経由でAI連動中</p>
         </header>
 
         <div class="ai-btn-container">
-            <button id="ai-trigger" class="ai-button" onclick="runAI()">🤖 AIで最新データをストーリーに翻訳する</button>
+            <button id="ai-trigger" class="ai-button" onclick="runSecureAI()">🔒 安全な隠し部屋でAI解説を作らせる</button>
         </div>
 
         <main id="game-list">
@@ -51,9 +51,6 @@
     <script>
         const SUPABASE_URL = 'https://zthdzfqsuztfsxjoboms.supabase.co'; 
         const SUPABASE_ANON_KEY = 'sb_publishable_DUhETmOXmNsqT_MKoiqYsQ_XbGX_ioG';
-        
-        // ⚠️ ここにさっきゲットした「sk-proj-...」から始まるOpenAIのキーを貼り付けて！
-        const OPENAI_API_KEY = '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'; 
 
         // Supabaseの初期化
         const { createClient } = window.supabase;
@@ -97,78 +94,29 @@
             }
         }
 
-        // 2. ボタンを押したときにAIを呼び出してSupabaseを書き換える処理
-        async function runAI() {
+        // 2. ボタンを押したときに、Supabaseの「隠し部屋（関数）」を叩く処理
+        async function runSecureAI() {
             const btn = document.getElementById('ai-trigger');
             btn.disabled = true;
-            btn.innerText = '⏳ AIがデータを分析して執筆中...';
-
-            // 本来は毎日自動で変わる「生の成績数字データ」のパーツ
-            const playerData = {
-                name: '牧 秀悟',
-                season_avg: '.295',
-                last_5_avg: '.412',
-                last_10_ops: '1.050',
-                extra_info: '直近3試合で2本塁打、相手先発の左投手に対して今季打率.385'
-            };
-
-            const prompt = `
-以下の【野球選手データ】を読み解き、野球初心者でも凄さが一瞬でわかる解説を作ってください。
-【野球選手データ】
-・選手名: ${playerData.name}
-・今季打率: ${playerData.season_avg}
-・直近5試合打率: ${playerData.last_5_avg}
-・直近10試合の貢献度指標(OPS): ${playerData.last_10_ops}
-・補足情報: ${playerData.extra_info}
-
-【絶対ルール】
-1. 専門用語（OPSなど）は使わないか、中学生でも一瞬でわかる言葉に言い換えて。
-2. フランクで親しみやすいプロ野球解説者のトーンで書いて。
-3. 必ず以下のJSONフォーマットだけで返答して。
-
-{"ai_story": "試合の見どころ100文字程度", "player_reason": "注目理由100文字程度"}
-`;
+            btn.innerText = '⏳ 隠し部屋でプログラムを実行中...';
 
             try {
-                // OpenAIのAPIを直接叩く
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${OPENAI_API_KEY}`
-                    },
-                    body: JSON.stringify({
-                        model: 'gpt-4o-mini',
-                        messages: [{ role: 'user', content: prompt }],
-                        response_format: { type: "json_object" }
-                    })
-                });
-
-                const resData = await response.json();
-                const aiResult = JSON.parse(resData.choices[0].message.content);
-
-                // 生成されたAIの文章でSupabaseをアップデート
-                const { error } = await supabase
-                    .from('games')
-                    .update({
-                        ai_story: aiResult.ai_story,
-                        featured_player: playerData.name,
-                        player_reason: aiResult.player_reason
-                    })
-                    .eq('id', 1);
+                // .rpc() を使って、さっきSQLで作った「generate_ai_story_v2」部屋を呼び出す！
+                const { data, error } = await supabase.rpc('generate_ai_story_v2');
 
                 if (error) throw error;
 
-                alert('✅ AI解説が完成し、Supabaseの書き換えに成功したぜ！');
-                // 画面を再読み込みして最新のAI文章を表示
+                alert('✅ 隠し部屋のプログラムが成功したぜ！\n' + data.message);
+                
+                // 画面を再読み込みして最新の文章を表示
                 fetchGamesFromSupabase();
 
             } catch (err) {
                 console.error(err);
-                alert('エラーが起きたぜ。OpenAIのキーが合っているか確認してね。');
+                alert('隠し部屋の呼び出しでエラーが起きたぜ。SQLが正しく実行されたか確認してね。');
             } finally {
                 btn.disabled = false;
-                btn.innerText = '🤖 AIで最新データをストーリーに翻訳する';
+                btn.innerText = '🔒 安全な隠し部屋でAI解説を作らせる';
             }
         }
 
